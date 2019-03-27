@@ -173,7 +173,10 @@ for epoch in range(opt.n_epochs):
 
         # Loss measures generator's ability to fool the discriminator
         validity = discriminator(gen_imgs, gen_labels)
-        g_loss = adversarial_loss(validity, valid) + pytorch_ssim.SSIM()
+        g_loss = adversarial_loss(validity, valid)
+	#temp_loss = pytorch_ssim.SSIM()
+	#temp_out = temp_loss(real_imgs, gen_imgs.detach())
+	#g_loss -= temp_out
 
         g_loss.backward()
         optimizer_G.step()
@@ -198,8 +201,7 @@ for epoch in range(opt.n_epochs):
         d_loss.backward()
         optimizer_D.step()
 
-        print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f]" % (epoch, opt.n_epochs, i, len(dataloader),
-                                                            d_loss.item(), g_loss.item()))
+        print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f] [SSIM %f]" % (epoch, opt.n_epochs, i, len(dataloader), d_loss.item(), g_loss.item(), 0.0))#temp_out.item()))
 
         batches_done = epoch * len(dataloader) + i
         if batches_done % opt.sample_interval == 0:
