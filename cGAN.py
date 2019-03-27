@@ -13,6 +13,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
+import pytorch_ssim
 
 if not os.path.exists('images'):
     os.makedirs('images')
@@ -172,7 +173,7 @@ for epoch in range(opt.n_epochs):
 
         # Loss measures generator's ability to fool the discriminator
         validity = discriminator(gen_imgs, gen_labels)
-        g_loss = adversarial_loss(validity, valid)
+        g_loss = adversarial_loss(validity, valid) + pytorch_ssim.SSIM()
 
         g_loss.backward()
         optimizer_G.step()
