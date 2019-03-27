@@ -2,3 +2,4 @@ dataset
 images
 *.gif
 dataset.tar.gz
+*.swp
