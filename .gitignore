@@ -4,3 +4,6 @@ images
 dataset.tar.gz
 *.swp
 *.pyc
+gen
+*.npy
+*.png

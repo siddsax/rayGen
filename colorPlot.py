@@ -9,6 +9,13 @@ from matplotlib import gridspec
 from matplotlib import pyplot as mp
 from PIL import Image
 import sys
+from matplotlib import cm
+from PIL import ImageFilter
+import os
+
+if not os.path.exists('gen'):
+    os.makedirs('gen')
+
 kappa = 0.0001
 d = 0.1
 
@@ -34,9 +41,21 @@ def plot_eps_2D(TAll):
   x = np.load('x.npy')*10
   for c in range(7):
     for r in range(7):
-      T = TAll[c*256+(c+1)*2 :(c+1)*256+(c+1)*2 , r*256+(r+1)*2 :(r+1)*256+(r+1)*2]
+      TF = TAll[c*256+(c+1)*2 :(c+1)*256+(c+1)*2 , r*256+(r+1)*2 :(r+1)*256+(r+1)*2]#.reshape((256, 256, 1))
 
-      #print "Max Value:", np.amax(np.reshape(T,256*256))
+      T = TF[18:238, 18:238]
+
+      T = Image.fromarray(np.uint8((T)*255))
+      T = T.filter(ImageFilter.SMOOTH_MORE).convert('LA')
+      T = np.array(T)[:,:,0]/255.0
+
+      TF[18:238, 18:238] = T
+      T = TF
+
+      T = Image.fromarray(np.uint8((T)*255))
+      T = T.filter(ImageFilter.BLUR).convert('LA')
+      T = np.array(T)[:,:,0]/255.0
+
       fig, axes = plt.subplots(figsize=(10,10))
       levels = []
       print "CHECK"
