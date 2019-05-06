@@ -1,3 +1,4 @@
+#Hello
 import argparse
 import os
 import numpy as np
@@ -73,13 +74,15 @@ class Discriminator(nn.Module):
         self.label_embedding = nn.Embedding(opt.n_classes, opt.n_classes)
 
         self.model = nn.Sequential(
-            nn.Linear(opt.n_classes + int(np.prod(img_shape)), 512),
+            nn.Linear(opt.n_classes + int(np.prod(img_shape)), 2048),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(512, 512),
-            nn.Dropout(0.4),
+            nn.Linear(2048, 1024),
+            #nn.Conv2d(1, 18, kernel_size=3, stride=1, padding = 1),
+            #nn.MaxPool2d(kernel_size=2, stride = 2, padding = 0),
+            nn.Dropout(0.3),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(512, 512),
-            nn.Dropout(0.4),
+            nn.Linear(1024, 512),
+            nn.Dropout(0.2),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(512, 1)
         )
@@ -139,10 +142,11 @@ def sample_image(n_row, batches_done):
     # Get labels ranging from 0 to n_classes for n rows
     labels = np.array([num for _ in range(n_row) for num in range(n_row)])
     labels = Variable(LongTensor(labels))
+    print (labels)
     gen_imgs = generator(z, labels)
-    np.save('images/n%d' % batches_done, gen_imgs.data.cpu().numpy())
+    np.save('images/n_1%d' % batches_done, gen_imgs.data.cpu().numpy())
     
-    save_image(gen_imgs.data, 'images/n%d.png' % batches_done, nrow=n_row, normalize=True)
+    save_image(gen_imgs.data, 'images/n_1%d.png' % batches_done, nrow=n_row, normalize=True)
 
 # ----------
 #  Training
@@ -176,7 +180,7 @@ for epoch in range(opt.n_epochs):
         # Loss measures generator's ability to fool the discriminator
         validity = discriminator(gen_imgs, gen_labels)
         g_loss = adversarial_loss(validity, valid)
-	temp_loss = pytorch_ssim.SSIM()
+	#temp_loss = pytorch_ssim.SSIM()
 	#temp_out = temp_loss(real_imgs, gen_imgs.detach())
 	#g_loss -= temp_out
 
@@ -203,7 +207,7 @@ for epoch in range(opt.n_epochs):
         d_loss.backward()
         optimizer_D.step()
 
-        print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f] [SSIM %f]" % (epoch, opt.n_epochs, i, len(dataloader), d_loss.item(), g_loss.item(), temp_out.item()))
+        print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f] " % (epoch, opt.n_epochs, i, len(dataloader), d_loss.item(), g_loss.item()))
 
         batches_done = epoch * len(dataloader) + i
         if batches_done % opt.sample_interval == 0:

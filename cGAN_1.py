@@ -20,7 +20,7 @@ if not os.path.exists('images'):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--n_epochs', type=int, default=500, help='number of epochs of training')
-parser.add_argument('--batch_size', type=int, default=64, help='size of the batches')
+parser.add_argument('--batch_size', type=int, default=32, help='size of the batches')
 parser.add_argument('--lr', type=float, default=0.0003, help='adam: learning rate')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
@@ -75,11 +75,13 @@ class Discriminator(nn.Module):
         self.model = nn.Sequential(
             nn.Linear(opt.n_classes + int(np.prod(img_shape)), 512),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(512, 512),
-            nn.Dropout(0.4),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(512, 512),
-            nn.Dropout(0.4),
+            #nn.Linear(512, 512),
+            nn.Conv2d(1, 18, kernel_size=3, stride=1, padding = 1)
+            nn.MaxPool2d(kernel_size=2, stride = 2, padding = 0 )
+            #nn.Dropout(0.4),
+            #nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(18*256*256, 512),
+            nn.Dropout(0.3),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(512, 1)
         )
@@ -140,9 +142,9 @@ def sample_image(n_row, batches_done):
     labels = np.array([num for _ in range(n_row) for num in range(n_row)])
     labels = Variable(LongTensor(labels))
     gen_imgs = generator(z, labels)
-    np.save('images/n%d' % batches_done, gen_imgs.data.cpu().numpy())
+    np.save('images/n_1%d' % batches_done, gen_imgs.data.cpu().numpy())
     
-    save_image(gen_imgs.data, 'images/n%d.png' % batches_done, nrow=n_row, normalize=True)
+    save_image(gen_imgs.data, 'images/n_1%d.png' % batches_done, nrow=n_row, normalize=True)
 
 # ----------
 #  Training
@@ -176,7 +178,7 @@ for epoch in range(opt.n_epochs):
         # Loss measures generator's ability to fool the discriminator
         validity = discriminator(gen_imgs, gen_labels)
         g_loss = adversarial_loss(validity, valid)
-	temp_loss = pytorch_ssim.SSIM()
+	#temp_loss = pytorch_ssim.SSIM()
 	#temp_out = temp_loss(real_imgs, gen_imgs.detach())
 	#g_loss -= temp_out
 
